@@ -1,5 +1,8 @@
 <?php
 
+function_exists('mb_substr') or die('mbstring extension is required');
+mb_internal_encoding("UTF-8");
+
 class Csv {
 	// take a CSV line (utf-8 encoded) and returns an array
 	// 'string1,string2,"string3","the ""string4"""' => array('string1', 'string2', 'string3', 'the "string4"')
@@ -82,16 +85,18 @@ class CsvReader implements Iterator {
 	protected $fileHandle = null;
 	protected $position = null;
 	protected $filename = null;
+	protected $encoding = null;
 	protected $currentLine = null;
 	protected $currentArray = null;
 	protected $separator = ',';
 	
 
-	public function __construct($filename, $separator = ',') {
+	public function __construct($filename, $separator = ',', $encoding = 'ISO-8859-1') {
 		$this->separator = $separator;
 		$this->fileHandle = fopen($filename, 'r');
 		if (!$this->fileHandle) return;
 		$this->filename = $filename;
+		$this->encoding = $encoding;
 		$this->position = 0;
 		$this->_readLine();
 	}
@@ -136,7 +141,10 @@ class CsvReader implements Iterator {
 	}
 
 	protected function _readLine() {
-		if (!feof($this->fileHandle)) $this->currentLine = trim(utf8_encode(fgets($this->fileHandle)));
+		if (!feof($this->fileHandle)) {
+			$this->currentLine = fgets($this->fileHandle);
+			$this->currentLine = trim(mb_convert_encoding($this->currentLine, 'UTF-8', $this->encoding));
+		}
 		else $this->currentLine = null;
 		if ($this->currentLine != '') $this->currentArray = Csv::parseString($this->currentLine, $this->separator);
 		else $this->currentArray = null;
@@ -159,7 +167,7 @@ class CsvWriter {
 
 	public function addLine(array $values) {
 		foreach ($values as $key => $value) {
-			$values[$key] = utf8_decode(Csv::escapeString($value));
+			$values[$key] = Csv::escapeString($value);
 		}
 		$string = implode(',', $values) . "\r\n";
 		fwrite($this->fileHandle, $string);

@@ -215,7 +215,7 @@ class CsvWriterTest extends UnitTestCase {
 		$csv->addLine(array('One', 'Twô wördç', 'One "quoted"', 'Single "quote'));
 		$csv->close();
 		$file = fopen(dirname(__FILE__) . '/data/writer-one-line.csv', 'r');
-		$string = utf8_encode(fgets($file));
+		$string = fgets($file);
 		fclose($file);
 		@unlink($filename);
 		$expected = 'One,Twô wördç,"One ""quoted""","Single ""quote"'."\r\n";
@@ -229,8 +229,8 @@ class CsvWriterTest extends UnitTestCase {
 		$csv->addLine(array('Line Number', '"Two "" is here"', 'Is', 'It fine?'));
 		$csv->close();
 		$file = fopen(dirname(__FILE__) . '/data/writer-one-line.csv', 'r');
-		$string1 = utf8_encode(fgets($file));
-		$string2 = utf8_encode(fgets($file));
+		$string1 = fgets($file);
+		$string2 = fgets($file);
 		fclose($file);
 		@unlink($filename);
 		$expected1 = 'One,Two words,"One ""quoted""","Single ""quote"'."\r\n";
